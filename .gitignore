@@ -1,0 +1,14 @@
+# Local databases
+*.duckdb
+*.duckdb.wal
+*.db
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+.aws/
+
+# Python environment
+.venv/
+__pycache__/
