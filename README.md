@@ -88,24 +88,29 @@ Adds person-level step-count variables to `claims_person_month_summary_final_w_i
 - `steps_period_1`, `steps_period_2`: mean daily steps on days 1–90 and 91–180 after the first app transaction. Each is only computed if step data are available on at least 75% of the days in that period (68 of 90).
 - `steps_diff`: `steps_period_2 − steps_period_1`, available only if both periods meet the coverage threshold.
 
+## 4. DiD analysis
+
 ## 5. Sample descriptives
 
-`descriptive_analyses` contains code to reproduce the descriptive figures and tables, e.g. the sample characteristics table, the PCG prevalence plots and the outpatient pre-trend checks. Both notebooks run against `insurance.duckdb`. They use the outputs of the DiD steps: `unique_ids_final.csv` (the final analysed sample, N = 100,281).
+Run after the DiD analysis. The descriptives depend on its sample selection (age and sex at adoption, sufficient pre- and post-periods, etc.) and on two of its outputs: `unique_ids_final.csv` (the final analysed sample, N = 100,281) and the quarterly panel `mdid_input` in `insurance.duckdb`.
+
+`descriptive_analyses` contains code to reproduce the descriptive figures and tables, e.g. the sample characteristics table, the PCG prevalence plots and the outpatient pre-trend checks. Both notebooks run against `insurance.duckdb`.
 
 ### `sample_descriptives.ipynb`
 
-Compares the DiD analysis sample with a comparison population of all insured adults. That population is everyone with ≥1 inpatient or outpatient claim in 2018–2024 and a mandatory (KVG) contract overlapping that period, who was aged ≥18 in at least one person record (N = 1,623,841). The comparison population includes the DHI adopters.
+Compares the analysis sample with an overall population of insured adults: everyone with ≥1 claim in 2018–2024, a mandatory (KVG) contract overlapping that period, and age ≥18 in at least one person record (N = 1,623,841). The adopters are part of this population, so the groups overlap. Besides the DiD outputs above, it needs `claims_person_month_summary` from data-preparation step 1 (for BMI).
 
-| Section | Output |
+Outputs:
+
+| Content | File |
 |---|---|
-| Comparison-population waterfall | Printed counts per inclusion step |
 | Income index distribution | `results/descriptives/income_distribution_did_vs_pop.png` |
-| Prevalence of pharmaceutical cost groups (PCGs), top 15 | `results/descriptives/pcg_prevalence_did_vs_pop.png`, `pcg_prevalence_top15_did_vs_pop.png` |
-| Characteristics table (age, sex, canton, income, yearly costs and claims, deductible, number of PCGs) | `results/descriptives/characteristics_table_did_vs_pop.csv` |
-| App-only characteristics for adopters (self-reported BMI with WHO categories, daily steps, sessions per active month) | `adopters_bmi_steps_sessions_summary.csv` |
-| Adopter characteristics by adoption year (2020–2024), including pre-/post-adoption observation time | `did_sample_characteristics_by_adoption_year.csv` |
-| Claims count and volume by legal basis (*Gesetz*), source and year, comparison population | `results/descriptives/gesetz_wide_filtered_pop.tex` |
-| Missingness by variable, analysis sample vs. comparison population | `results/descriptives/missingness_by_adoption_status.csv` |
+| PCG prevalence, top 15 | `results/descriptives/pcg_prevalence_did_vs_pop.png`, `pcg_prevalence_top15_did_vs_pop.png` |
+| Characteristics table: age, sex, canton, income, yearly costs and claims, deductible, number of PCGs | `results/descriptives/characteristics_table_did_vs_pop.csv` |
+| App-only characteristics of adopters: self-reported BMI, daily steps, sessions per active month | `adopters_bmi_steps_sessions_summary.csv` |
+| Adopter characteristics by adoption year (2020–2024), incl. pre/post observation time | `did_sample_characteristics_by_adoption_year.csv` |
+| Claims count and volume by legal basis, source and year (overall population) | `results/descriptives/gesetz_wide_filtered_pop.csv` |
+| Missingness by variable, analysis sample vs. overall population | `results/descriptives/missingness_by_adoption_status.csv` |
 
 ### `outpatient_pretrend_investigation.ipynb`
 
