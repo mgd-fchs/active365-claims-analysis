@@ -133,3 +133,9 @@ Describes when the analysis sample adopted the DHI and how they used it afterwar
 ### `outpatient_pretrend_investigation.ipynb`
 
 Investigates the rise in outpatient claims in the quarters just before adoption (pre-trends violation). It compares months −1 to −3 with months −4 to −6 before each person's adoption, using KVG outpatient claims only:
+1. **More claimants, or more claims per claimant?** Compares months −1 to −3 before adoption with months −4 to −6: claimants, claims and cost per claimant. It also splits claimants into new and returning; returning means they had claims in months −7 to −12.
+2. **What changes among returning claimants?** Breaks the change down by reason for treatment, product category and tariff position. The largest increases are COVID-19 self-tests (`01.03.1000`), physiotherapy (`7301`) and psychotherapy (`PA010`).
+3. **When were the self-tests billed?** Plots self-test claims per quarter against new adopters per quarter. Free pharmacy self-tests from spring 2021 coincide with the largest adoption cohort. Output: `adopters_vs_selftests_quarterly.png`.
+4. **Do adopters differ from not-yet-treated controls in the quarter before adoption?** Compares claims and costs per person (Mann–Whitney U tests) and claim composition by reason for treatment and tariff position (χ² tests).
+
+This analysis motivated the `EXCL_COVID_TESTS` sensitivity option in data-preparation step 1. All other results are printed in the notebook, not saved.
