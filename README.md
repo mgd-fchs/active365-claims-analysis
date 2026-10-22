@@ -112,6 +112,24 @@ Outputs:
 | Claims count and volume by legal basis, source and year (overall population) | `results/descriptives/gesetz_wide_filtered_pop.csv` |
 | Missingness by variable, analysis sample vs. overall population | `results/descriptives/missingness_by_adoption_status.csv` |
 
+### `dhi_adoption_engagement_descriptives.ipynb`
+
+Describes when the analysis sample adopted the DHI and how they used it afterwards. Adoption is defined by the first app transaction.
+
+| Section | Content | File |
+|---|---|---|
+| App uptake | New adopters in 2024 (total and by month); people with any transaction per year, 2020–2024 | `yearly_unique_transactors.png` |
+| Adoption timing | New adopters per month in the analysis sample, 2020–2024, with marketing pushes marked | `results/descriptives/adoption_by_month_main.png` / `.pdf` |
+| Engagement over time | Time to last point-earning day (Kaplan–Meier; churn = no points in the last 90 days of data) | figure in `results/descriptives/` |
+| | Share of adopters earning points in each quarter since adoption; cumulative active months | `results/descriptives/engagement_by_quarter_main.png` |
+| | Continuously active, returning and inactive adopters by quarter since adoption | `results/descriptives/engagement_states_by_quarter_main.png` / `.pdf` |
+| Deductible (franchise) | Changes from the year before adoption to the adoption year, and from the adoption year to the year after (binomial test for direction of change) | `results/descriptives/franchise_transitions_main.csv` |
+| | Adult deductible distribution by calendar year, 2018–2024 | `results/descriptives/franchise_distribution_by_year.png` / `.pdf`, `franchise_distribution_by_year_pct.csv` |
+| Reward modules | Participation in medical check-up, preventive check-up and sports-club modules by year since adoption | `results/descriptives/{medical_checkup,preventive_checkup,sports_club}_module_by_rel_year.png` |
+| Health sessions | Participation in mind / move / nutrition sessions by year since adoption and calendar year (sessions available from 2023); sessions per person, with sessions <60 s apart removed | figures in `results/descriptives/` |
+| Chronic diagnoses | First-time PCG assignments by year relative to adoption | figures in `results/descriptives/` |
+| Reward points | activePoints credited in the adoption quarter and the following 5 quarters, by adoption cohort; only adopters with the full window observed | `results/descriptives/credit_points_post_adoption_by_cohort.csv` |
+
 ### `outpatient_pretrend_investigation.ipynb`
 
 Investigates the rise in outpatient claims in the quarters just before adoption (pre-trends violation). It compares months −1 to −3 with months −4 to −6 before each person's adoption, using KVG outpatient claims only:
