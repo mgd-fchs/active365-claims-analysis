@@ -90,6 +90,65 @@ Adds person-level step-count variables to `claims_person_month_summary_final_w_i
 
 ## 4. DiD analysis
 
+The DiD analysis uses three files in `diff-in-diff/`, which call each other in sequence:
+
+| File | Role |
+|---|---|
+| `run_did_grid.sh` | Entry point. Sets the specification and loops over subgroups; one Python call per combination |
+| `run_mdid_pipeline.py` | Builds the analysis panel in DuckDB, applies sample selection and subgroup filters, exports the panel and calls R |
+| `mdid_standard_pckg.R` | Estimates the staggered-adoption DiD with the `did` package and writes the results |
+
+Run from the repository root after data preparation (steps 1 and 2; step 3 only for the steps-diff stratification):
+
+```bash
+bash diff-in-diff/run_did_grid.sh
+nohup bash diff-in-diff/run_did_grid.sh > did_run.log 2>&1 &   # long runs
+```
+
+### Configuration (`run_did_grid.sh`)
+
+All settings are variables at the top of the script and are documented inline. The main ones:
+
+- **Data and outcomes:** `SOURCE_TABLE` (default: the data-prep step 2 table) and `OUTCOMES`, a comma-separated list of cost and claim-count columns.
+- **Winsorization:** with `WINSORIZE=True`, cost outcomes are replaced by versions capped at `WINSOR_PCT` (default: the 99th percentile of positive values). Count outcomes are never winsorized.
+- **Time:** `GRANULARITY` (default quarterly), event-time window `MIN_E_LIST`/`MAX_E_LIST`, calendar window `CAL_MIN`/`CAL_MAX`.
+- **Estimation:** `CONTROL_GROUP` (not-yet-treated), `BASE_PERIOD` (varying / universal), balanced or unbalanced panel with minimum pre- and post-adoption periods (`UNBALANCED`, `MIN_PRE_PERIODS`, `MIN_POST_PERIODS`).
+- **Subgroups (looped):** age band at adoption, sex, BMI category.
+- **Stratifications (optional):** app engagement, income index, prior-year healthcare costs, pre-existing chronic condition (PCG) or type 2 diabetes, and change in daily steps after adoption.
+- **Robustness:** `PLACEBO_TIME=True` randomly permutes adoption timing across treated people, with a fixed seed.
+
+Each run writes to its own folder under `ROOT_OUT`. The folder name encodes the specification, e.g. `both_ages18-120_quarterly_eventtimes-12-12_..._UNBAL_pre4_post2_wall`.
+
+### Pipeline (`run_mdid_pipeline.py`)
+
+For each run:
+
+1. copies `SOURCE_TABLE` to a temporary work table;
+2. filters on age and sex at adoption, then BMI, then the requested stratification;
+3. aggregates person-months to person-periods and codes calendar period (`t_index`), adoption period (`g_index`) and event time;
+4. balances or trims the panel (minimum pre/post periods; early-treated people are dropped in the balanced panel);
+5. optionally permutes adoption timing (placebo);
+6. adds winsorized cost columns (`<col>_w`);
+7. writes the sample summaries and `did_input.parquet`, then calls `mdid_standard_pckg.R`.
+
+The script prints the sample sizes after each step. The final DiD exclusions in the PRISMA chart come from this output.
+
+### Estimation (`mdid_standard_pckg.R`)
+
+Uses the Callaway & Sant'Anna estimator (`did::att_gt`) with the doubly robust method, adjusting for age and sex at adoption. It allows an unbalanced panel, assumes no anticipation and uses analytic standard errors. Group-time effects are aggregated into a dynamic event study over `MIN_E`–`MAX_E`, and the overall ATT is the average of the post-adoption event-time effects.
+
+### Outputs per run folder
+
+| File | Content |
+|---|---|
+| `att_results_r_did.csv` | Overall ATT per outcome with SE, 95% CI and p-value, plus the Wald pre-test of parallel trends |
+| `eventstudy_<outcome>_<base>.csv`, `did_plot_<outcome>_<base>.png` | Event-study estimates and plot |
+| `gt_r_<outcome>_<base>.csv` | Group-time ATTs |
+| `did_sample_summary.csv`, `preadoption_cost_summary.csv`, `support_event_time.csv/.png` | Sample size, sex and age at adoption, pre-adoption costs (event time −4 to −1), observations per event time |
+| `winsorization_cutoffs.csv` | Cutoff and number of capped values per cost column |
+| `stratum_summary.csv` | All settings of the run |
+| `did_input.parquet`, `unique_ids.csv`, intermediate `*.parquet` / `*_ids.csv` | Analysis panel and included/dropped IDs. **Individual-level, do not share.** |
+
 ## 5. Sample descriptives
 
 Run after the DiD analysis. The descriptives depend on its sample selection (age and sex at adoption, sufficient pre- and post-periods, etc.) and on two of its outputs: `unique_ids_final.csv` (the final analysed sample, N = 100,281) and the quarterly panel `mdid_input` in `insurance.duckdb`.
